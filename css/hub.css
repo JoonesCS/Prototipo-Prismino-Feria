@@ -1,0 +1,363 @@
+/* Prismino · hub (index.html)
+   Solo layout y estilos del hub; todos los valores salen de css/base.css. */
+
+.hub {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* — cabecera: barra + portada sobre el mismo fondo — */
+.hub-cabecera {
+  background: var(--color-accent-800);
+  color: var(--color-paper);
+}
+
+.hub-nav {
+  padding: var(--space-3) var(--page-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.hub-marca {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-paper);
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: var(--text-brand);
+  letter-spacing: -0.01em;
+}
+.hub-marca:hover { color: var(--color-paper); }
+
+.hub-nav__enlaces {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-md);
+}
+.hub-nav__enlaces a {
+  color: var(--color-paper);
+  text-decoration: none;
+}
+.hub-nav__enlaces a:hover,
+.hub-nav__enlaces a:focus-visible {
+  color: var(--color-accent-200);
+  text-decoration: underline;
+}
+
+/* Panel docente: se muestra para la demostración, pero no es un enlace. */
+.docente-no-disponible {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px dashed var(--color-accent-400);
+  border-radius: var(--radius-md);
+  color: var(--color-accent-200);
+  font-size: var(--text-sm);
+  cursor: not-allowed;
+}
+
+.hub-hero {
+  max-width: 880px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: clamp(40px, 7vw, 96px) var(--page-gutter) clamp(56px, 8vw, 112px);
+}
+.hub-hero__antetitulo {
+  font-size: var(--text-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-200);
+}
+.hub-hero h1 {
+  margin: 0;
+  font-size: var(--text-display);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-paper);
+}
+.hub-hero p {
+  margin: 0;
+  max-width: 600px;
+  font-size: var(--text-lg);
+  line-height: 1.5;
+  color: var(--color-accent-100);
+  text-wrap: pretty;
+}
+
+/* — tarjetas de área — */
+.hub-main {
+  flex: 1;
+  padding: 0 var(--page-gutter) clamp(48px, 6vw, 80px);
+  margin-top: clamp(-72px, -5vw, -40px); /* las tarjetas suben sobre la cabecera */
+}
+
+.area-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--space-6);
+  max-width: var(--page-max);
+}
+
+.area-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-paper);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s;
+}
+.area-card:hover,
+.area-card:focus-visible {
+  color: var(--color-text);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .area-card { transition: none; }
+  .area-card:hover, .area-card:focus-visible { transform: none; }
+}
+
+.area-card__ilustracion {
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  background: var(--color-accent-100);
+}
+.area-card__ilustracion svg { width: 100%; height: 100%; }
+
+.area-card__cuerpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+}
+.area-card__cuerpo h2 {
+  margin: 0;
+  font-size: var(--text-h2);
+  line-height: 1.1;
+}
+.area-card__cuerpo p {
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+.area-card__accion {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-accent-700);
+}
+
+/* Estado del área: funcional (lleno) o maqueta (punteado). */
+.estado {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-paper);
+  background: var(--color-accent-700);
+}
+.estado--maqueta {
+  padding: 2px 10px;
+  border: 1px dashed var(--color-accent-700);
+  color: var(--color-accent-800);
+  background: none;
+}
+
+.estado--borrador {
+  padding: 2px 10px;
+  border: 1px dashed var(--color-accent-2-700);
+  color: var(--color-accent-2-700);
+  background: none;
+}
+
+/* — barra: página actual — */
+.hub-nav__enlaces a[aria-current="page"] {
+  color: var(--color-accent-200);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+/* — portada compacta (páginas interiores) — */
+.hub-hero--compacta {
+  gap: var(--space-3);
+  padding-top: clamp(32px, 5vw, 64px);
+  padding-bottom: clamp(56px, 7vw, 96px);
+}
+.hub-hero--compacta h1 { font-size: var(--text-title); line-height: 1.05; }
+.hub-hero--compacta p { font-size: var(--text-md); }
+
+/* — lista de niveles (matematicas.html) — */
+.niveles {
+  max-width: 960px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.nivel a {
+  display: grid;
+  grid-template-columns: 4.5rem 7rem 1fr auto;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-paper);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s;
+}
+.nivel a:hover,
+.nivel a:focus-visible {
+  color: var(--color-text);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nivel a { transition: none; }
+  .nivel a:hover, .nivel a:focus-visible { transform: none; }
+}
+
+.nivel__numero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: var(--text-numero);
+  line-height: 1;
+  color: var(--color-accent-700);
+}
+.nivel__rotulo {
+  margin-bottom: var(--space-1);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-700);
+}
+
+.nivel__icono {
+  display: block;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-100);
+}
+.nivel__icono svg { width: 100%; height: auto; }
+
+.nivel__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.nivel__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.nivel__tipo {
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-700);
+}
+.nivel__texto h2 {
+  margin: 0;
+  font-size: var(--text-h3);
+}
+.nivel__texto p {
+  margin: 0;
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--color-neutral-800);
+  text-wrap: pretty;
+}
+
+.nivel__accion {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-accent-700);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .nivel a {
+    grid-template-columns: auto 1fr;
+    gap: var(--space-3) var(--space-4);
+    padding: var(--space-4);
+  }
+  .nivel__icono { display: none; }
+  .nivel__numero { align-self: start; }
+  .nivel__accion { grid-column: 2; }
+}
+
+.lista-aviso {
+  max-width: 960px;
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-paper);
+  border-left: 4px solid var(--color-accent-2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* — pie — */
+.hub-pie {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-6) var(--page-gutter);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+}
+
+/* — colores de las ilustraciones SVG —
+   Los atributos fill/stroke no aceptan var() de forma fiable; las clases sí. */
+.ilustracion text { font-family: var(--font-body); }
+.mezcla-pantalla { mix-blend-mode: screen; }
+
+.f-papel       { fill: var(--color-paper); }
+.f-accent      { fill: var(--color-accent); }
+.f-accent-400  { fill: var(--color-accent-400); }
+.f-accent-500  { fill: var(--color-accent-500); }
+.f-accent-700  { fill: var(--color-accent-700); }
+.f-accent-900  { fill: var(--color-accent-900); }
+.f-accent-2    { fill: var(--color-accent-2); }
+.f-accent-2-400 { fill: var(--color-accent-2-400); }
+.f-accent-2-700 { fill: var(--color-accent-2-700); }
+.f-amarillo    { fill: var(--color-process-yellow); }
+
+.s-accent      { stroke: var(--color-accent); }
+.s-accent-500  { stroke: var(--color-accent-500); }
+.s-accent-800  { stroke: var(--color-accent-800); }
+.s-accent-2    { stroke: var(--color-accent-2); }
+.s-amarillo    { stroke: var(--color-process-yellow); }

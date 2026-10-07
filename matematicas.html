@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matemáticas · Prismino</title>
+  <meta name="description" content="Ejemplos del modelo de barras para la demostración de Prismino.">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/hub.css">
+</head>
+<body>
+<div class="hub">
+  <header class="hub-cabecera">
+    <nav class="hub-nav" aria-label="Principal">
+      <a class="hub-marca" href="index.html">
+        <svg class="hub-logo" width="30" height="28" viewBox="0 0 30 28" aria-hidden="true">
+          <g class="mezcla-pantalla">
+            <path class="f-accent-400" d="M15 1 L29 27 H1 Z"/>
+            <path class="f-accent-2-400" d="M15 9 L25 27 H5 Z" opacity="0.85"/>
+            <path class="f-amarillo" d="M15 17 L20 27 H10 Z"/>
+          </g>
+        </svg>
+        <span>Prismino</span>
+      </a>
+      <ul class="hub-nav__enlaces">
+        <li><a href="matematicas.html" aria-current="page">Matemáticas</a></li>
+        <li><a href="lectura.html">Lectura</a></li>
+        <li><a href="ciencias.html">Ciencias</a></li>
+        <li><span class="docente-no-disponible" title="Función no disponible en el prototipo">Panel docente · próximamente</span></li>
+      </ul>
+    </nav>
+
+    <div class="hub-hero hub-hero--compacta">
+      <span class="hub-hero__antetitulo">Matemáticas · Modelo de barras</span>
+      <h1>Ejemplos para la demostración</h1>
+      <p>En la app, el motor adaptativo elige el siguiente problema según cómo te va. Aquí puedes abrir cualquiera de los cinco.</p>
+    </div>
+  </header>
+
+  <main class="hub-main">
+    <ol class="niveles" id="niveles" aria-label="Niveles"></ol>
+    <p class="lista-aviso" id="niveles-aviso" hidden>No se pudieron cargar los problemas. Revisa que exista <code>data/problemas.js</code>.</p>
+  </main>
+
+  <footer class="hub-pie">
+    <span>Prototipo de demostración · sin cuentas ni datos guardados</span>
+    <span>Alineado con los programas de MEDUCA</span>
+  </footer>
+</div>
+
+<script src="data/problemas.js"></script>
+<script>
+  // Genera la lista de niveles desde window.PROBLEMAS (data/problemas.js).
+  (function () {
+    var TIPOS = {
+      "parte-todo": "Parte–todo",
+      "comparacion": "Comparación",
+      "unidades": "Unidades"
+    };
+
+    // Iconos fijos por estructura (no contienen datos del archivo).
+    var ICONOS = {
+      "parte-todo":
+        '<path class="s-accent-800" d="M4 14 V8 H92 V14" fill="none" stroke-width="2"/>' +
+        '<rect class="f-accent" x="4" y="20" width="36" height="20" rx="1"/>' +
+        '<rect class="s-accent-2" x="41" y="21" width="50" height="18" rx="1" fill="none" stroke-width="2" stroke-dasharray="4 3"/>',
+      "comparacion":
+        '<rect class="f-accent" x="4" y="8" width="88" height="16" rx="1"/>' +
+        '<rect class="f-accent-700" x="4" y="32" width="52" height="16" rx="1"/>' +
+        '<rect class="s-accent-2" x="57" y="33" width="34" height="14" rx="1" fill="none" stroke-width="2" stroke-dasharray="4 3"/>',
+      "unidades":
+        '<rect class="f-accent-700" x="4" y="8" width="27" height="16" rx="1"/>' +
+        '<rect class="f-accent" x="4" y="32" width="27" height="16" rx="1"/>' +
+        '<rect class="f-accent" x="33" y="32" width="27" height="16" rx="1"/>'
+    };
+
+    var lista = document.getElementById("niveles");
+    var problemas = Array.isArray(window.PROBLEMAS) ? window.PROBLEMAS.slice() : [];
+
+    if (problemas.length === 0) {
+      document.getElementById("niveles-aviso").hidden = false;
+      return;
+    }
+
+    problemas.sort(function (a, b) { return a.nivel - b.nivel; });
+
+    problemas.forEach(function (p) {
+      var item = document.createElement("li");
+      item.className = "nivel";
+
+      var enlace = document.createElement("a");
+      enlace.href = "problema.html?id=" + encodeURIComponent(p.id);
+
+      var numero = document.createElement("span");
+      numero.className = "nivel__numero";
+      numero.innerHTML = '<span class="nivel__rotulo">Nivel</span>';
+      numero.appendChild(document.createTextNode(p.nivel));
+
+      var icono = document.createElement("span");
+      icono.className = "nivel__icono";
+      icono.innerHTML = '<svg viewBox="0 0 96 56" aria-hidden="true">' + (ICONOS[p.tipo] || "") + "</svg>";
+
+      var texto = document.createElement("div");
+      texto.className = "nivel__texto";
+
+      var meta = document.createElement("div");
+      meta.className = "nivel__meta";
+      var tipo = document.createElement("span");
+      tipo.className = "nivel__tipo";
+      tipo.textContent = TIPOS[p.tipo] || p.tipo;
+      meta.appendChild(tipo);
+      if (p.borrador) {
+        var borrador = document.createElement("span");
+        borrador.className = "estado estado--borrador";
+        borrador.textContent = "Borrador";
+        meta.appendChild(borrador);
+      }
+
+      var titulo = document.createElement("h2");
+      titulo.textContent = p.titulo;
+
+      var enunciado = document.createElement("p");
+      enunciado.textContent = p.enunciado;
+
+      texto.append(meta, titulo, enunciado);
+
+      var accion = document.createElement("span");
+      accion.className = "nivel__accion";
+      accion.textContent = "Abrir →";
+
+      enlace.append(numero, icono, texto, accion);
+      item.appendChild(enlace);
+      lista.appendChild(item);
+    });
+  })();
+</script>
+</body>
+</html>
