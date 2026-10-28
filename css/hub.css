@@ -55,15 +55,12 @@
   text-decoration: underline;
 }
 
-/* Panel docente: se muestra para la demostración, pero no es un enlace. */
-.docente-no-disponible {
+/* Panel docente: enlace con marco, para distinguirlo de las áreas. */
+.hub-nav__docente {
   display: inline-block;
   padding: 6px 14px;
-  border: 1px dashed var(--color-accent-400);
+  border: 1px solid var(--color-accent-400);
   border-radius: var(--radius-md);
-  color: var(--color-accent-200);
-  font-size: var(--text-sm);
-  cursor: not-allowed;
 }
 
 .hub-hero {
