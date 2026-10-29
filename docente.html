@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel docente · Prismino</title>
+  <meta name="description" content="Maqueta del panel docente de Prismino: dónde se rompe el razonamiento de cada estudiante, con datos de ejemplo.">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/hub.css">
+  <link rel="stylesheet" href="css/docente.css">
+</head>
+<body>
+<div class="hub">
+  <header class="hub-cabecera">
+    <nav class="hub-nav" aria-label="Principal">
+      <a class="hub-marca" href="index.html">
+        <svg class="hub-logo" width="30" height="28" viewBox="0 0 30 28" aria-hidden="true">
+          <g class="mezcla-pantalla">
+            <path class="f-accent-400" d="M15 1 L29 27 H1 Z"/>
+            <path class="f-accent-2-400" d="M15 9 L25 27 H5 Z" opacity="0.85"/>
+            <path class="f-amarillo" d="M15 17 L20 27 H10 Z"/>
+          </g>
+        </svg>
+        <span>Prismino</span>
+      </a>
+      <ul class="hub-nav__enlaces">
+        <li><a href="matematicas.html">Matemáticas</a></li>
+        <li><a href="lectura.html">Lectura</a></li>
+        <li><a href="ciencias.html">Ciencias</a></li>
+        <li><a class="hub-nav__docente" href="docente.html" aria-current="page">Panel docente</a></li>
+      </ul>
+    </nav>
+
+    <div class="hub-hero hub-hero--compacta docente-hero">
+      <span class="hub-hero__antetitulo">Panel docente · Maqueta con datos de ejemplo</span>
+      <h1 id="grupo-titulo">Grupo</h1>
+      <p id="grupo-sub"></p>
+      <dl class="cifras" id="cifras"></dl>
+    </div>
+  </header>
+
+  <main class="hub-main docente-main">
+    <p class="lista-aviso" id="docente-aviso" hidden>No se pudieron cargar los datos de ejemplo. Revisa que exista <code>data/docente.js</code>.</p>
+
+    <section class="clase" aria-labelledby="clase-titulo">
+      <div class="seccion-cabecera">
+        <span class="seccion-antetitulo">Lo que más se repite en el grupo</span>
+        <h2 id="clase-titulo">Para la clase de mañana</h2>
+      </div>
+      <ol class="clase-grid" id="clase"></ol>
+    </section>
+
+    <div class="panel">
+      <aside class="grupo" aria-labelledby="grupo-lista-titulo">
+        <h2 id="grupo-lista-titulo">Estudiantes</h2>
+        <p class="grupo__nota">Ordenados por quién necesita apoyo, no por nota. Prismino no compara estudiantes entre sí.</p>
+        <div id="grupo-lista"></div>
+        <p class="grupo__nota" id="grupo-resto"></p>
+      </aside>
+
+      <article class="ficha" id="ficha" aria-live="polite"></article>
+    </div>
+  </main>
+
+  <footer class="hub-pie">
+    <span>Maqueta del panel docente · estudiantes y cifras inventados</span>
+    <span>Sin datos emocionales · conforme a la Ley 81</span>
+  </footer>
+</div>
+
+<script src="data/docente.js"></script>
+<script>
+  // Arma el panel desde window.DOCENTE (data/docente.js).
+  (function () {
+    "use strict";
+
+    var D = window.DOCENTE;
+    if (!D || !Array.isArray(D.estudiantes) || D.estudiantes.length === 0) {
+      document.getElementById("docente-aviso").hidden = false;
+      return;
+    }
+
+    var ESTADOS = {
+      domina:    { texto: "Domina", icono: "✓" },
+      practica:  { texto: "En práctica", icono: "" },
+      atascado:  { texto: "Atascado", icono: "!" },
+      pendiente: { texto: "Sin empezar", icono: "○" }
+    };
+    var AYUDAS = {
+      resuelto: "Ejemplo resuelto",
+      guiado: "Guiado",
+      independiente: "Independiente"
+    };
+    var PRIORIDADES = [
+      { clave: "apoyo", titulo: "Necesitan apoyo" },
+      { clave: "practica", titulo: "En práctica" },
+      { clave: "avanza", titulo: "Avanzan" }
+    ];
+
+    // Atajo para crear elementos; el texto siempre entra como textContent.
+    function el(etiqueta, clase, texto) {
+      var nodo = document.createElement(etiqueta);
+      if (clase) nodo.className = clase;
+      if (texto != null) nodo.textContent = texto;
+      return nodo;
+    }
+
+    function habilidad(id) {
+      return (D.habilidades && D.habilidades[id]) || { nombre: id, grado: "" };
+    }
+
+    function iniciales(nombre) {
+      return nombre.split(/\s+/).slice(0, 2).map(function (p) { return p.charAt(0); }).join("");
+    }
+
+    // — cabecera del grupo —
+    var g = D.grupo || {};
+    document.getElementById("grupo-titulo").textContent = (g.nombre || "Grupo") + " · Matemáticas";
+    document.getElementById("grupo-sub").textContent =
+      (g.area || "") + " · semana del " + (g.semana || "—") + ". Lo que ves es lo que el sistema verificó: cómo armaron el modelo, el cálculo y cuánta ayuda usaron.";
+
+    var cifras = document.getElementById("cifras");
+    [
+      [g.estudiantes, "estudiantes en el grupo"],
+      [g.necesitan_apoyo, "necesitan apoyo esta semana"],
+      [g.errores_estructura, "errores al armar el modelo"],
+      [g.errores_calculo, "errores al calcular"]
+    ].forEach(function (c) {
+      var item = el("div", "cifra");
+      item.append(el("dt", "cifra__rotulo", c[1]), el("dd", "cifra__numero", c[0] != null ? String(c[0]) : "—"));
+      cifras.appendChild(item);
+    });
+
+    // — para la clase de mañana —
+    var clase = document.getElementById("clase");
+    (D.clase || []).forEach(function (c, i) {
+      var h = habilidad(c.habilidad);
+      var item = el("li", "clase-card");
+      var cab = el("div", "clase-card__cabecera");
+      cab.append(el("span", "clase-card__orden", String(i + 1)), el("span", "clase-card__cuantos", c.estudiantes + " estudiantes"));
+      var titulo = el("h3", null, h.nombre);
+      var error = el("p", "clase-card__error", c.error);
+      var sug = el("p", "clase-card__sugerencia");
+      sug.append(el("strong", null, "En el aula: "), document.createTextNode(c.sugerencia));
+      var preg = el("blockquote", "pregunta", c.pregunta);
+      item.append(cab, titulo, error, sug, preg);
+      clase.appendChild(item);
+    });
+
+    // — lista de estudiantes —
+    var lista = document.getElementById("grupo-lista");
+    var botones = {};
+    PRIORIDADES.forEach(function (p) {
+      var del_grupo = D.estudiantes.filter(function (e) { return e.prioridad === p.clave; });
+      if (del_grupo.length === 0) return;
+      lista.appendChild(el("h3", "grupo__titulo grupo__titulo--" + p.clave, p.titulo));
+      var ul = el("ul", "grupo__lista");
+      del_grupo.forEach(function (e) {
+        var li = el("li");
+        var b = el("button", "alumno");
+        b.type = "button";
+        b.dataset.id = e.id;
+        b.append(
+          el("span", "alumno__monograma", iniciales(e.nombre)),
+          el("span", "alumno__nombre", e.nombre),
+          el("span", "alumno__foco", e.foco ? habilidad(e.foco).nombre : "Sin atascos")
+        );
+        b.addEventListener("click", function () { mostrar(e.id, true); });
+        botones[e.id] = b;
+        li.appendChild(b);
+        ul.appendChild(li);
+      });
+      lista.appendChild(ul);
+    });
+    var resto = (g.estudiantes || 0) - D.estudiantes.length;
+    if (resto > 0) {
+      document.getElementById("grupo-resto").textContent =
+        "La maqueta muestra " + D.estudiantes.length + " de " + g.estudiantes + " estudiantes.";
+    }
+
+    // — ficha del estudiante —
+    var ficha = document.getElementById("ficha");
+
+    function seccion(titulo, antetitulo) {
+      var s = el("section", "ficha__seccion");
+      if (antetitulo) s.appendChild(el("span", "seccion-antetitulo", antetitulo));
+      s.appendChild(el("h3", null, titulo));
+      return s;
+    }
+
+    // Los errores como un modelo de barras: una barra, dos partes, una llave con el total.
+    function barraErrores(errores) {
+      var total = (errores.estructura || 0) + (errores.calculo || 0);
+      var cont = el("div", "errores");
+      if (total === 0) {
+        cont.appendChild(el("p", "errores__vacio", "Sin errores esta semana."));
+        return cont;
+      }
+      var llave = el("div", "errores__llave");
+      llave.appendChild(el("span", null, total + (total === 1 ? " error" : " errores")));
+      var barra = el("div", "errores__barra");
+      barra.setAttribute("role", "img");
+      barra.setAttribute("aria-label", errores.estructura + " al armar el modelo y " + errores.calculo + " al calcular");
+      [["estructura", "Al armar el modelo"], ["calculo", "Al calcular"]].forEach(function (t) {
+        var n = errores[t[0]] || 0;
+        if (n === 0) return;
+        var seg = el("span", "errores__seg errores__seg--" + t[0], String(n));
+        seg.style.flexGrow = n;
+        seg.title = t[1] + ": " + n;
+        barra.appendChild(seg);
+      });
+      var leyenda = el("ul", "errores__leyenda");
+      [["estructura", "Al armar el modelo (comprensión)"], ["calculo", "Al calcular"]].forEach(function (t) {
+        var li = el("li");
+        li.append(el("span", "errores__muestra errores__muestra--" + t[0]), document.createTextNode(t[1] + ": " + (errores[t[0]] || 0)));
+        leyenda.appendChild(li);
+      });
+      cont.append(llave, barra, leyenda);
+      return cont;
+    }
+
+    function mapaDominio(e) {
+      var cont = el("div", "mapa");
+      (D.rutas || []).forEach(function (r) {
+        var ruta = el("div", "ruta");
+        ruta.appendChild(el("span", "ruta__nombre", r.nombre));
+        var ol = el("ol", "ruta__cadena");
+        r.habilidades.forEach(function (id) {
+          var h = habilidad(id);
+          var est = (e.dominio && e.dominio[id]) || "pendiente";
+          var info = ESTADOS[est] || ESTADOS.pendiente;
+          var li = el("li", "nodo nodo--" + est + (e.origen === id ? " nodo--origen" : ""));
+          li.append(
+            el("span", "nodo__icono", info.icono),
+            el("span", "nodo__grado", h.grado),
+            el("span", "nodo__nombre", h.nombre),
+            el("span", "nodo__estado", e.origen === id ? info.texto + " · origen del vacío" : info.texto)
+          );
+          li.querySelector(".nodo__icono").setAttribute("aria-hidden", "true");
+          ol.appendChild(li);
+        });
+        ruta.appendChild(ol);
+        cont.appendChild(ruta);
+      });
+      var leyenda = el("ul", "mapa__leyenda");
+      Object.keys(ESTADOS).forEach(function (k) {
+        var li = el("li", "nodo--" + k);
+        li.append(el("span", "nodo__icono", ESTADOS[k].icono), document.createTextNode(ESTADOS[k].texto));
+        leyenda.appendChild(li);
+      });
+      cont.appendChild(leyenda);
+      return cont;
+    }
+
+    function historial(e) {
+      var envoltura = el("div", "tabla-envoltura");
+      var tabla = el("table", "historial");
+      var thead = el("thead");
+      var fila = el("tr");
+      ["Cuándo", "Problema", "Ayuda", "Modelo de barras", "Cálculo"].forEach(function (t) {
+        var th = el("th", null, t);
+        th.scope = "col";
+        fila.appendChild(th);
+      });
+      thead.appendChild(fila);
+      var tbody = el("tbody");
+      (e.historial || []).forEach(function (h) {
+        var tr = el("tr");
+        tr.appendChild(el("td", "historial__fecha", h.fecha));
+        tr.appendChild(el("td", "historial__problema", h.problema));
+        var ayuda = el("td");
+        ayuda.appendChild(el("span", "ayuda ayuda--" + h.ayuda, AYUDAS[h.ayuda] || h.ayuda));
+        tr.appendChild(ayuda);
+        tr.appendChild(resultado(h.estructura));
+        tr.appendChild(h.estructura === "ok" ? resultado(h.calculo) : el("td", "res res--nulo", "No llegó"));
+        tbody.appendChild(tr);
+      });
+      tabla.append(thead, tbody);
+      envoltura.appendChild(tabla);
+      return envoltura;
+    }
+
+    function resultado(valor) {
+      if (valor === "ok") return el("td", "res res--ok", "✓ Correcto");
+      if (valor == null) return el("td", "res res--nulo", "—");
+      return el("td", "res res--error", "✗ " + valor);
+    }
+
+    function mostrar(id, enfocar) {
+      var e = D.estudiantes.filter(function (x) { return x.id === id; })[0] || D.estudiantes[0];
+      Object.keys(botones).forEach(function (k) {
+        botones[k].setAttribute("aria-pressed", k === e.id ? "true" : "false");
+      });
+      try { history.replaceState(null, "", "#" + e.id); } catch (err) { /* file:// en algunos navegadores */ }
+
+      ficha.textContent = "";
+
+      // cabecera
+      var cab = el("header", "ficha__cabecera");
+      var mono = el("span", "ficha__monograma", iniciales(e.nombre));
+      mono.setAttribute("aria-hidden", "true");
+      var datos = el("div", "ficha__datos");
+      var h2 = el("h2", null, e.nombre);
+      h2.tabIndex = -1;
+      datos.append(
+        h2,
+        el("p", "ficha__meta", (g.nombre || "") + " · última práctica " + e.ultima + " · " + e.problemas_semana + " problemas esta semana")
+      );
+      var prioridad = PRIORIDADES.filter(function (p) { return p.clave === e.prioridad; })[0];
+      var sello = el("span", "sello sello--" + e.prioridad, prioridad ? prioridad.titulo : "");
+      cab.append(mono, datos, sello);
+      ficha.appendChild(cab);
+
+      // diagnóstico
+      var diag = el("section", "ficha__diagnostico");
+      diag.appendChild(el("span", "seccion-antetitulo", "Dónde se rompe su razonamiento"));
+      if (e.foco) {
+        var foco = habilidad(e.foco);
+        diag.appendChild(el("p", "ficha__foco", foco.grado + " · " + foco.nombre));
+      }
+      diag.appendChild(el("p", "ficha__resumen", e.resumen));
+      if (e.origen && e.origen !== e.foco) {
+        var o = habilidad(e.origen);
+        diag.appendChild(el("p", "ficha__origen", "El vacío viene de " + o.grado + ": " + o.nombre + "."));
+      }
+      ficha.appendChild(diag);
+
+      // estructura o cálculo + reflexión
+      var fila = el("div", "ficha__fila");
+      var sErr = seccion("¿Comprensión o cálculo?", "Errores esta semana");
+      sErr.appendChild(barraErrores(e.errores || {}));
+      var sRef = seccion("Lo que escribió al fallar", "Autorreflexión académica");
+      if (e.reflexiones && e.reflexiones.length) {
+        e.reflexiones.forEach(function (r) {
+          var q = el("blockquote", "reflexion");
+          q.append(el("p", null, "«" + r.texto + "»"), el("cite", null, r.fecha));
+          sRef.appendChild(q);
+        });
+      } else {
+        sRef.appendChild(el("p", "ficha__vacio", "No hubo fallos que pidieran reflexión esta semana."));
+      }
+      fila.append(sErr, sRef);
+      ficha.appendChild(fila);
+
+      // mapa de dominio
+      var sMapa = seccion("Mapa de dominio", "Grafo de habilidades · MEDUCA");
+      sMapa.appendChild(mapaDominio(e));
+      ficha.appendChild(sMapa);
+
+      // historial
+      var sHist = seccion("Últimos intentos", "Qué verificó Prismino");
+      sHist.appendChild(historial(e));
+      ficha.appendChild(sHist);
+
+      // sugerencia
+      var sClase = el("section", "ficha__seccion ficha__clase");
+      sClase.appendChild(el("span", "seccion-antetitulo", "Sugerencia para el aula"));
+      sClase.appendChild(el("p", "ficha__sugerencia", e.sugerencia));
+      var grupal = (D.clase || []).filter(function (c) { return c.habilidad === e.foco; })[0];
+      if (grupal) {
+        sClase.appendChild(el("span", "seccion-antetitulo", "Pregunta para el diálogo"));
+        sClase.appendChild(el("blockquote", "pregunta", grupal.pregunta));
+      }
+      ficha.appendChild(sClase);
+
+      ficha.appendChild(el("p", "ficha__privacidad",
+        "Prismino no pregunta, registra ni infiere cómo se siente el estudiante. Solo muestra cómo razonó en los problemas."));
+
+      if (enfocar) h2.focus({ preventScroll: window.matchMedia("(min-width: 960px)").matches });
+    }
+
+    mostrar(decodeURIComponent(location.hash.slice(1)) || D.estudiantes[0].id, false);
+  })();
+</script>
+</body>
+</html>
